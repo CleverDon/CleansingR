@@ -29,50 +29,55 @@ activities <- /UCI HAR Dataset/activity_labels.txt
 ===============================================================  
 The other variables and transformations are:
 
-1.  First we replace the parentheses with dahses in the feature text. Parentheses are invalid as a column name, so it will have dashes for now.  The dashes make it so we can distinguish between mean and meanFrew later for removal.
+### 1.  First we replace the parentheses with dahses in the feature text. Parentheses are invalid as a column name, so it will have dashes for now.  The dashes make it so we can distinguish between mean and meanFrew later for removal.
 
-## parentheses are not valid in data frame column names, so
-##     substituting dashes for them now and will remove all dashes
-##     pulling out all dashes later
+-- parentheses are not valid in data frame column names, so
+--     substituting dashes for them now and will remove all dashes
+--     pulling out all dashes later
 features$V2 <- gsub("\\(","--",features$V2)
 features$V2 <- gsub("\\)","--",features$V2)
 
-2.  Next we have to join all these files together.  so we put the subject and activity data as two columns on the left side.  The we append the test and training sets together to make one dataset (observations).
+### 2.  Next we have to join all these files together.  so we put the subject and activity data as two columns on the left side.  The we append the test and training sets together to make one dataset (observations).
 
-## Combine the subject, activity, and observation datasets then 
-##    combine the test and training sets together
+-- Combine the subject, activity, and observation datasets then 
+--    combine the test and training sets together
 test <- cbind(subjecttest,ytest,xtest)
 train <- cbind(subjecttrain,ytrain,xtrain)
 obs <- rbind(train, test)
 
-3.  Next we set the column names for the observations
+### 3.  Next we set the column names for the observations
 
-## Set the column names for the observations (obs)
+-- Set the column names for the observations (obs)
 meancol = c("subject","activityid",features$V2)
 names(obs) <- tolower(meancol)
 
-4.  Then we keep only the columns with mean and std.  We make the subjects a factor, because the were numeric.  And we join the activities file to the observations, so we get the names.
+### 4.  Then we keep only the columns with mean and std.  We make the subjects a factor, because the were numeric.  And we join the activities file to the observations, so we get the names.
 
-## Take out the columns exceot for the mean and std,  
-##    set the subject to be a factor
-##    and lookup the activity name
+-- Take out the columns exceot for the mean and std,  
+--    set the subject to be a factor
+--    and lookup the activity name
 meanobs <- obs[,grep("(subject|activityid|mean--|std--)",meancol)]
 meanobs$subject <- factor(meanobs$subject)
 meanobs <- merge(meanobs,activities,by.x = "activityid", by.y = "id",all.x = TRUE)
 
-5.  Then we just do some final cleanup on the observation tidy data.  We drop the column with the activity id numbers, since we now have the names.  We also remove the dashes from the column names so they are all just lower case letters and numbers. 
+### 5.  Then we just do some final cleanup on the observation tidy data.  We drop the column with the activity id numbers, since we now have the names.  We also remove the dashes from the column names so they are all just lower case letters and numbers. 
 
-## Clean up observations by removing all dashes and removing
-##    the activity id
+-- Clean up observations by removing all dashes and removing
+--    the activity id
 names(meanobs) <- gsub("-","",names(meanobs))
 meanobs$activityid <- NULL
 
-6.  Last we create the grouping for the average requirement.  Then summarize it in order to calculate the mean.
+### 6.  We create the grouping for the average requirement.  Then summarize it in order to calculate the mean.
 
-## Create the groups and summarizes the averages for activities and subjects
-
+-- Create the groups and summarizes the averages for activities and subjects
 grp <- group_by(meanobs,activity,subject)
 activityavg <- summarize_each(grp,funs(mean))
+
+### 7.  Write the two datasets to a file
+
+-- Write the activityavg and tidydata out to files:
+write.table(meanobs,"tidydata.csv")
+write.table(activityavg,"tidyactivityavg.csv")
 
 ===================================================================
 The information about the data is contained here from the previous codebook:
