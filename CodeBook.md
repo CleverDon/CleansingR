@@ -77,7 +77,7 @@ activityavg <- summarize_each(grp,funs(mean))
 
 -- Write the activityavg and tidydata out to files:
 write.table(meanobs,"tidydata.csv")
-write.table(activityavg,"tidyactivityavg.csv")
+write.table(activityavg,"tidyactivityavg.csv",row.name=FALSE)
 
 ===================================================================
 The information about the data is contained here from the previous codebook:
